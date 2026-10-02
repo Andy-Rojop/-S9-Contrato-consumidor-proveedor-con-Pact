@@ -1,0 +1,33 @@
+{
+  "name": "reto-pact-inventario",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Contract testing entre un servicio de reservaciones (consumidor) y una API de inventario (proveedor) con Pact V3 + Vitest",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start:provider": "tsx src/provider/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm test:consumer && pnpm test:provider",
+    "test:consumer": "vitest run tests/consumer",
+    "test:provider": "vitest run tests/provider",
+    "pact:show": "cat pacts/ReservationService-InventoryApi.json"
+  },
+  "dependencies": {
+    "express": "5.2.1"
+  },
+  "devDependencies": {
+    "@pact-foundation/pact": "17.1.4",
+    "@types/express": "5.0.6",
+    "@types/node": "26.1.1",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@pact-foundation/pact-core", "esbuild"]
+  }
+}

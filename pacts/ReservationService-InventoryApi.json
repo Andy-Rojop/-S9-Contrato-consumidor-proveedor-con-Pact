@@ -1,0 +1,297 @@
+{
+  "consumer": {
+    "name": "ReservationService"
+  },
+  "interactions": [
+    {
+      "description": "una consulta de inventario de un SKU inexistente",
+      "providerStates": [
+        {
+          "name": "el SKU no existe en el catálogo",
+          "params": {
+            "sku": "SKU-9999"
+          }
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "matchingRules": {
+          "path": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "^/inventory/SKU-\\d{4}$"
+              }
+            ]
+          }
+        },
+        "method": "GET",
+        "path": "/inventory/SKU-9999"
+      },
+      "response": {
+        "body": {
+          "error": "SKU_NOT_FOUND",
+          "message": "No existe un producto con SKU SKU-9999",
+          "sku": "SKU-9999"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.sku": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^SKU-\\d{4}$"
+                }
+              ]
+            }
+          },
+          "header": {
+            "Content-Type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^application/json(;\\s?charset=utf-8)?$"
+                }
+              ]
+            }
+          }
+        },
+        "status": 404
+      }
+    },
+    {
+      "description": "una consulta de inventario de un producto agotado",
+      "providerStates": [
+        {
+          "name": "el producto está agotado",
+          "params": {
+            "sku": "SKU-2002"
+          }
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "matchingRules": {
+          "path": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "^/inventory/SKU-\\d{4}$"
+              }
+            ]
+          }
+        },
+        "method": "GET",
+        "path": "/inventory/SKU-2002"
+      },
+      "response": {
+        "body": {
+          "availableQuantity": 0,
+          "expectedRestockDate": "2026-10-15",
+          "name": "Fertilizante 20-20-0 quintal",
+          "sku": "SKU-2002",
+          "status": "OUT_OF_STOCK",
+          "updatedAt": "2026-09-01T10:00:00.000Z",
+          "warehouse": "RET-01"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.expectedRestockDate": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))?)$"
+                }
+              ]
+            },
+            "$.name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.sku": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^SKU-\\d{4}$"
+                }
+              ]
+            },
+            "$.updatedAt": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d(:?[0-5]\\d)?|Z)$"
+                }
+              ]
+            },
+            "$.warehouse": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {
+            "Content-Type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^application/json(;\\s?charset=utf-8)?$"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "una consulta de inventario de un producto disponible",
+      "providerStates": [
+        {
+          "name": "el producto tiene existencias disponibles",
+          "params": {
+            "availableQuantity": 25,
+            "sku": "SKU-1001"
+          }
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "matchingRules": {
+          "path": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "^/inventory/SKU-\\d{4}$"
+              }
+            ]
+          }
+        },
+        "method": "GET",
+        "path": "/inventory/SKU-1001"
+      },
+      "response": {
+        "body": {
+          "availableQuantity": 25,
+          "name": "Saco de maíz blanco 45 kg",
+          "sku": "SKU-1001",
+          "status": "IN_STOCK",
+          "updatedAt": "2026-09-01T10:00:00.000Z",
+          "warehouse": "RET-01"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.availableQuantity": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.sku": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^SKU-\\d{4}$"
+                }
+              ]
+            },
+            "$.updatedAt": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d(:?[0-5]\\d)?|Z)$"
+                }
+              ]
+            },
+            "$.warehouse": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {
+            "Content-Type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^application/json(;\\s?charset=utf-8)?$"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-js": {
+      "version": "17.1.4"
+    },
+    "pactRust": {
+      "ffi": "0.5.8",
+      "models": "1.3.16"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "InventoryApi"
+  }
+}

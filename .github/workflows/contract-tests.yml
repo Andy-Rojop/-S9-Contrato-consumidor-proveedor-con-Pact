@@ -1,0 +1,75 @@
+name: Contract tests (Pact)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  consumer:
+    name: Consumidor · genera el contrato
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Pruebas Pact del consumidor (cliente real vs mock de Pact)
+        run: pnpm test:consumer
+
+      - name: El pact versionado en pacts/ debe estar al día
+        run: git diff --exit-code -- pacts/
+
+      - name: Publicar el contrato como artefacto
+        uses: actions/upload-artifact@v7
+        with:
+          name: pact-contract
+          path: pacts/
+          if-no-files-found: error
+          retention-days: 14
+
+  provider:
+    name: Proveedor · verifica el contrato
+    runs-on: ubuntu-latest
+    needs: consumer
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Se verifica el contrato RECIÉN generado por el job del consumidor,
+      # no el que está en el repositorio.
+      - name: Descargar el contrato generado
+        uses: actions/download-artifact@v8
+        with:
+          name: pact-contract
+          path: downloaded-pacts/
+
+      - name: Verificación Pact contra la API real de inventario
+        run: pnpm test:provider
+        env:
+          PACT_URL: ${{ github.workspace }}/downloaded-pacts/ReservationService-InventoryApi.json
+          GIT_SHA: ${{ github.sha }}
+          GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
